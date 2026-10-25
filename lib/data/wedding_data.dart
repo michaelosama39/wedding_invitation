@@ -43,15 +43,7 @@ class WeddingData {
   //     'a contribution to our honeymoon would be warmly appreciated.';
   // static const bankDetails = 'IBAN  IT00 X000 0000 0000 0000 0000 000';
 
-  /// Gallery photos, from assets/images/. Missing files fall back to paintings.
-  static const galleryImages = <String>[
-    'assets/images/gallery_1.jpg',
-    'assets/images/gallery_2.jpg',
-    'assets/images/gallery_3.jpg',
-    'assets/images/gallery_4.jpg',
-    'assets/images/gallery_5.jpg',
-    'assets/images/gallery_6.jpg',
-  ];
+  // Gallery photos are loaded automatically from assets/images/gallery*.jpg|png.
 
   static const initialWishes = <Wish>[
     Wish('Elena', 'Wishing you a lifetime of sunsets as golden as Tuscany. Cin cin!'),
@@ -66,7 +58,7 @@ class WeddingAssets {
   static const venue = 'assets/images/venue.png';
   static const dressCode = 'assets/images/dresscode.png';
   static const footer = 'assets/images/footer.png';
-  static const music = 'audio/music.mp3'; // relative to assets/ for audioplayers
+  static const music = 'assets/audio/music.mp3';
 }
 
 class ScheduleItem {

@@ -10,5 +10,5 @@ painted placeholder, so the site works without them.
 | `images/venue.png` | Venue sketch / photo above "The Venue" |
 | `images/dresscode.png` | Dress-code illustration |
 | `images/footer.png` | Ornament at the bottom of the page |
-| `images/gallery_1.jpg` … `gallery_6.jpg` | Gallery photos |
+| `images/gallery_1.jpg`, `gallery_2.jpg`, … (any number, jpg/png/webp) | Gallery slider — picked up automatically |
 | `audio/music.mp3` | Background music (starts when the envelope is opened) |

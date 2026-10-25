@@ -68,6 +68,7 @@ class _EnvelopeScreenState extends State<EnvelopeScreen> with TickerProviderStat
           final byHeight = math.max(120.0, (c.maxHeight - 250) / (0.66 * 1.55));
           final w = math.min(math.min(c.maxWidth * 0.86, 560.0), byHeight);
           final h = w * 0.66;
+          final seal = (w * 0.24).clamp(96.0, 130.0);
           return AnimatedBuilder(
             animation: Listenable.merge([_open, _pulse]),
             builder: (context, _) {
@@ -106,15 +107,15 @@ class _EnvelopeScreenState extends State<EnvelopeScreen> with TickerProviderStat
                             if (!flapBehind) _buildFlap(w, h, flapAngle),
                             // Wax seal
                             Positioned(
-                              left: w / 2 - 40,
-                              top: h * 0.5 - 40,
+                              left: w / 2 - seal / 2,
+                              top: h * 0.5 - seal / 2,
                               child: Opacity(
                                 opacity: 1 - _seal.value,
                                 child: Transform.scale(
                                   scale: (1 + _pulse.value * 0.05) * (1 + _seal.value * 0.4),
                                   child: GestureDetector(
                                     onTap: _tap,
-                                    child: MouseRegion(cursor: SystemMouseCursors.click, child: const _WaxSeal()),
+                                    child: MouseRegion(cursor: SystemMouseCursors.click, child: _WaxSeal(size: seal)),
                                   ),
                                 ),
                               ),
@@ -190,13 +191,14 @@ class _InnerCard extends StatelessWidget {
 }
 
 class _WaxSeal extends StatelessWidget {
-  const _WaxSeal();
+  final double size;
+  const _WaxSeal({this.size = 110});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 80,
-      height: 80,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
@@ -205,17 +207,21 @@ class _WaxSeal extends StatelessWidget {
           stops: [0, 0.55, 1],
         ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: size * 0.125,
+            offset: Offset(0, size * 0.05),
+          ),
         ],
       ),
       child: Container(
-        margin: const EdgeInsets.all(9),
+        margin: EdgeInsets.all(size * 0.11),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: const Color(0xFF8A5E48).withValues(alpha: 0.6), width: 1.5),
         ),
         alignment: Alignment.center,
-        child: Text(WeddingData.monogram, style: AppText.script(24, color: const Color(0xFF6B4334))),
+        child: Text(WeddingData.monogram, style: AppText.script(size * 0.25, color: const Color(0xFF6B4334))),
       ),
     );
   }

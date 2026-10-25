@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -374,71 +375,192 @@ class WelcomeSection extends StatelessWidget {
 
 // ---------------------------------------------------------------- Gallery
 
-class GallerySection extends StatelessWidget {
+/// Auto-playing carousel of every image in assets/images/ whose file name
+/// starts with "gallery" (gallery_1.jpg, gallery_2.png, ...). Just drop new
+/// files into the folder — no code change needed.
+class GallerySection extends StatefulWidget {
   const GallerySection({super.key});
 
   @override
+  State<GallerySection> createState() => _GallerySectionState();
+}
+
+class _GallerySectionState extends State<GallerySection> {
+  final _carousel = CarouselSliderController();
+  List<String> _images = const [];
+  bool _loaded = false;
+  bool _autoPlay = true;
+  int _page = 0;
+
+  int get _count => _images.isEmpty ? 3 : _images.length; // 3 painted placeholders
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImages();
+  }
+
+  Future<void> _loadImages() async {
+    List<String> found = const [];
+    try {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      found = manifest
+          .listAssets()
+          .where((p) => p.startsWith('assets/images/gallery'))
+          .where((p) => RegExp(r'\.(jpe?g|png|webp|gif)$', caseSensitive: false).hasMatch(p))
+          .toList()
+        ..sort(_naturalCompare);
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _images = found;
+      _loaded = true;
+    });
+  }
+
+  /// Sorts gallery_2 before gallery_10.
+  static int _naturalCompare(String a, String b) {
+    int n(String s) => int.tryParse(RegExp(r'(\d+)(?!.*\d)').firstMatch(s)?.group(1) ?? '') ?? 0;
+    final c = n(a).compareTo(n(b));
+    return c != 0 ? c : a.compareTo(b);
+  }
+
+  Widget _image(int i, BoxFit fit) {
+    final placeholder = CustomPaint(painter: TuscanLandscapePainter(variant: (i * 0.31) % 1));
+    return _images.isEmpty ? placeholder : AssetOr(_images[i], fit: fit, fallback: placeholder);
+  }
+
+  Future<void> _open(int i) async {
+    setState(() => _autoPlay = false);
+    await showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => GestureDetector(
+        onTap: () => Navigator.of(ctx).pop(),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: InteractiveViewer(child: _image(i, BoxFit.contain)),
+        ),
+      ),
+    );
+    if (mounted) setState(() => _autoPlay = true);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final images = WeddingData.galleryImages;
+    final multiple = _count > 1;
     return SectionShell(
       maxWidth: 960,
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 96),
+      padding: const EdgeInsets.symmetric(vertical: 96),
       child: Column(
         children: [
           const Reveal(child: SectionTitle(title: 'Gallery', ornament: false)),
-          LayoutBuilder(
-            builder: (context, c) {
-              final cols = c.maxWidth > 640 ? 3 : 2;
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: images.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 0.78,
-                ),
-                itemBuilder: (context, i) => Reveal(
-                  delay: Duration(milliseconds: 80 * (i % cols)),
-                  child: _GalleryTile(index: i, path: images[i]),
-                ),
-              );
-            },
-          ),
+          if (!_loaded)
+            const SizedBox(height: 420)
+          else
+            Reveal(
+              child: LayoutBuilder(builder: (context, c) {
+                final height = (c.maxWidth * 1.15).clamp(340.0, 560.0);
+                final fraction = ((height * 0.78) / c.maxWidth).clamp(0.4, 0.82);
+                final wide = c.maxWidth > 640;
+                return Column(
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CarouselSlider.builder(
+                          carouselController: _carousel,
+                          itemCount: _count,
+                          itemBuilder: (context, i, _) => MouseRegion(
+                            cursor: SystemMouseCursors.zoomIn,
+                            child: GestureDetector(
+                              onTap: () => _open(i),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: ColoredBox(
+                                  color: AppColors.parchment,
+                                  child: SizedBox.expand(child: _image(i, BoxFit.cover)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          options: CarouselOptions(
+                            height: height,
+                            viewportFraction: fraction,
+                            enlargeCenterPage: true,
+                            enlargeFactor: 0.18,
+                            enableInfiniteScroll: multiple,
+                            autoPlay: multiple && _autoPlay,
+                            autoPlayInterval: const Duration(seconds: 4),
+                            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                            autoPlayCurve: Curves.easeInOutCubic,
+                            pauseAutoPlayOnTouch: true,
+                            onPageChanged: (i, _) => setState(() => _page = i),
+                          ),
+                        ),
+                        if (wide && multiple) ...[
+                          Positioned(
+                            left: 12,
+                            child: _ArrowButton(icon: Icons.chevron_left, onTap: _carousel.previousPage),
+                          ),
+                          Positioned(
+                            right: 12,
+                            child: _ArrowButton(icon: Icons.chevron_right, onTap: _carousel.nextPage),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (multiple) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < _count; i++)
+                            GestureDetector(
+                              onTap: () => _carousel.animateToPage(i),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: i == _page ? 22 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: i == _page ? AppColors.mauve : AppColors.ink(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ],
+                );
+              }),
+            ),
         ],
       ),
     );
   }
 }
 
-class _GalleryTile extends StatelessWidget {
-  final int index;
-  final String path;
-  const _GalleryTile({required this.index, required this.path});
+class _ArrowButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ArrowButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    Widget image() => AssetOr(
-      path,
-      fit: BoxFit.cover,
-      fallback: CustomPaint(
-        painter: TuscanLandscapePainter(variant: (index * 0.19) % 1),
-      ),
-    );
-    return MouseRegion(
-      cursor: SystemMouseCursors.zoomIn,
-      child: GestureDetector(
-        onTap: () => showDialog(
-          context: context,
-          barrierColor: Colors.black87,
-          builder: (_) => Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(24),
-            child: AspectRatio(aspectRatio: 0.78, child: image()),
-          ),
+    return Material(
+      color: Colors.white.withValues(alpha: 0.85),
+      shape: const CircleBorder(),
+      elevation: 2,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(icon, color: AppColors.foreground, size: 28),
         ),
-        child: SizedBox.expand(child: image()),
       ),
     );
   }

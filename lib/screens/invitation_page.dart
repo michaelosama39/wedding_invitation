@@ -31,10 +31,13 @@ class _InvitationPageState extends State<InvitationPage> {
   /// counts as the user gesture browsers require for autoplay.
   Future<void> _startMusic() async {
     final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-    if (!manifest.listAssets().contains('assets/${WeddingAssets.music}')) return;
+    if (!manifest.listAssets().contains(WeddingAssets.music)) return;
     await _player.setReleaseMode(ReleaseMode.loop);
     try {
-      await _player.play(AssetSource(WeddingAssets.music), volume: 0.6);
+      // AssetSource adds the "assets/" prefix itself (audioplayers' default
+      // AudioCache prefix), so pass the path without it.
+      final source = WeddingAssets.music.replaceFirst(RegExp(r'^assets/'), '');
+      await _player.play(AssetSource(source), volume: 0.6);
       if (mounted) setState(() => _hasMusic = _playing = true);
     } catch (_) {
       // Autoplay blocked — show the button so the guest can start it.

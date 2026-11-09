@@ -31,7 +31,9 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        # Uses repo variable BASE_HREF if set (e.g. "/" for a custom domain),
+        # otherwise "/<repo-name>/" for the default github.io URL.
+        run: flutter build web --release --base-href "${{ vars.BASE_HREF || format('/{0}/', github.event.repository.name) }}"
 
       - name: Add SPA fallback
         run: cp build/web/index.html build/web/404.html

@@ -15,20 +15,33 @@ class EnvelopeScreen extends StatefulWidget {
   State<EnvelopeScreen> createState() => _EnvelopeScreenState();
 }
 
-class _EnvelopeScreenState extends State<EnvelopeScreen> with TickerProviderStateMixin {
-  late final AnimationController _open =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
-  late final AnimationController _pulse =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1600))..repeat(reverse: true);
+class _EnvelopeScreenState extends State<EnvelopeScreen>
+    with TickerProviderStateMixin {
+  late final AnimationController _open = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2800),
+  );
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  )..repeat(reverse: true);
 
-  late final Animation<double> _seal =
-      CurvedAnimation(parent: _open, curve: const Interval(0.0, 0.18, curve: Curves.easeIn));
-  late final Animation<double> _flap =
-      CurvedAnimation(parent: _open, curve: const Interval(0.12, 0.45, curve: Curves.easeInOut));
-  late final Animation<double> _card =
-      CurvedAnimation(parent: _open, curve: const Interval(0.45, 0.85, curve: Curves.easeOutCubic));
-  late final Animation<double> _fade =
-      CurvedAnimation(parent: _open, curve: const Interval(0.85, 1.0, curve: Curves.easeIn));
+  late final Animation<double> _seal = CurvedAnimation(
+    parent: _open,
+    curve: const Interval(0.0, 0.18, curve: Curves.easeIn),
+  );
+  late final Animation<double> _flap = CurvedAnimation(
+    parent: _open,
+    curve: const Interval(0.12, 0.45, curve: Curves.easeInOut),
+  );
+  late final Animation<double> _card = CurvedAnimation(
+    parent: _open,
+    curve: const Interval(0.45, 0.85, curve: Curves.easeOutCubic),
+  );
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _open,
+    curve: const Interval(0.85, 1.0, curve: Curves.easeIn),
+  );
 
   @override
   void initState() {
@@ -58,87 +71,129 @@ class _EnvelopeScreenState extends State<EnvelopeScreen> with TickerProviderStat
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             radius: 1.2,
-            colors: [AppColors.background, AppColors.parchment, Color(0xFFEFC9D2)],
+            colors: [
+              AppColors.background,
+              AppColors.parchment,
+              Color(0xFFEFC9D2),
+            ],
             stops: [0, 0.6, 1],
           ),
         ),
-        child: LayoutBuilder(builder: (context, c) {
-          // Fit both width and height: the column needs ~230px of text plus
-          // the envelope (h) and the room the card slides into (0.55h).
-          final byHeight = math.max(120.0, (c.maxHeight - 250) / (0.66 * 1.55));
-          final w = math.min(math.min(c.maxWidth * 0.86, 560.0), byHeight);
-          final h = w * 0.66;
-          final seal = (w * 0.24).clamp(96.0, 130.0);
-          return AnimatedBuilder(
-            animation: Listenable.merge([_open, _pulse]),
-            builder: (context, _) {
-              final flapAngle = _flap.value * math.pi;
-              final flapBehind = flapAngle > math.pi / 2;
-              return Opacity(
-                opacity: 1 - _fade.value,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('You are invited', style: AppText.label(14, color: AppColors.mauve, spacing: 6)),
-                      const SizedBox(height: 8),
-                      Text('${WeddingData.brideName} & ${WeddingData.groomName}',
-                          style: AppText.script(52)),
-                      SizedBox(height: 40 + h * 0.55),
-                      SizedBox(
-                        width: w,
-                        height: h,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            // Back of envelope
-                            Positioned.fill(child: CustomPaint(painter: _EnvelopeBackPainter())),
-                            if (flapBehind) _buildFlap(w, h, flapAngle),
-                            // Card sliding out
-                            Positioned(
-                              left: w * 0.06,
-                              right: w * 0.06,
-                              top: h * 0.08 - _card.value * h * 0.62,
-                              height: h * 0.86,
-                              child: _InnerCard(),
-                            ),
-                            // Front pocket
-                            Positioned.fill(child: CustomPaint(painter: _EnvelopeFrontPainter())),
-                            if (!flapBehind) _buildFlap(w, h, flapAngle),
-                            // Wax seal
-                            Positioned(
-                              left: w / 2 - seal / 2,
-                              top: h * 0.5 - seal / 2,
-                              child: Opacity(
-                                opacity: 1 - _seal.value,
-                                child: Transform.scale(
-                                  scale: (1 + _pulse.value * 0.05) * (1 + _seal.value * 0.4),
-                                  child: GestureDetector(
-                                    onTap: _tap,
-                                    child: MouseRegion(cursor: SystemMouseCursors.click, child: _WaxSeal(size: seal)),
+        child: LayoutBuilder(
+          builder: (context, c) {
+            // Fit both width and height: the column needs ~230px of text plus
+            // the envelope (h) and the room the card slides into (0.55h).
+            final byHeight = math.max(
+              120.0,
+              (c.maxHeight - 250) / (0.66 * 1.55),
+            );
+            final w = math.min(math.min(c.maxWidth * 0.86, 560.0), byHeight);
+            final h = w * 0.66;
+            final seal = (w * 0.24).clamp(96.0, 130.0);
+            return AnimatedBuilder(
+              animation: Listenable.merge([_open, _pulse]),
+              builder: (context, _) {
+                final flapAngle = _flap.value * math.pi;
+                final flapBehind = flapAngle > math.pi / 2;
+                return Opacity(
+                  opacity: 1 - _fade.value,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'You are invited',
+                          style: AppText.label(
+                            14,
+                            color: AppColors.mauve,
+                            spacing: 6,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${WeddingData.groomName} & ${WeddingData.brideName}',
+                          style: AppText.script(52),
+                        ),
+                        SizedBox(height: 40 + h * 0.55),
+                        SizedBox(
+                          width: w,
+                          height: h,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              // Back of envelope
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: _EnvelopeBackPainter(),
+                                ),
+                              ),
+                              if (flapBehind) _buildFlap(w, h, flapAngle),
+                              // Card sliding out
+                              Positioned(
+                                left: w * 0.06,
+                                right: w * 0.06,
+                                top: h * 0.08 - _card.value * h * 0.62,
+                                height: h * 0.86,
+                                child: _InnerCard(),
+                              ),
+                              // Front pocket
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: _EnvelopeFrontPainter(),
+                                ),
+                              ),
+                              if (!flapBehind) _buildFlap(w, h, flapAngle),
+                              // Wax seal
+                              Positioned(
+                                left: w / 2 - seal / 2,
+                                top: h * 0.5 - seal / 2,
+                                child: Opacity(
+                                  opacity: 1 - _seal.value,
+                                  child: Transform.scale(
+                                    scale:
+                                        (1 + _pulse.value * 0.05) *
+                                        (1 + _seal.value * 0.4),
+                                    child: GestureDetector(
+                                      onTap: _tap,
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.click,
+                                        child: _WaxSeal(size: seal),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 36),
-                      Opacity(
-                        opacity: (1 - _seal.value * 3).clamp(0, 1),
-                        child: Column(children: [
-                          Icon(Icons.touch_app_outlined, color: AppColors.roseDark),
-                          const SizedBox(height: 6),
-                          Text('Tap the seal to open', style: AppText.body(18, style: FontStyle.italic)),
-                        ]),
-                      ),
-                    ],
+                        const SizedBox(height: 36),
+                        Opacity(
+                          opacity: (1 - _seal.value * 3).clamp(0, 1),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.touch_app_outlined,
+                                color: AppColors.roseDark,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tap the seal to open',
+                                style: AppText.body(
+                                  18,
+                                  style: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        }),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -167,20 +222,34 @@ class _InnerCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.background,
         border: Border.all(color: AppColors.gold, width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8),
+        ],
       ),
       padding: const EdgeInsets.all(8),
       child: Container(
-        decoration: BoxDecoration(border: Border.all(color: AppColors.gold.withValues(alpha: 0.5))),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
         alignment: Alignment.center,
         child: FittedBox(
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
-                Text('SAVE THE DATE', style: AppText.label(12, color: AppColors.gold, spacing: 4)),
-                Text(WeddingData.monogram, style: AppText.script(40, color: AppColors.foreground)),
-                Text(WeddingData.dateLabel, style: AppText.body(14)),
+                Text(
+                  'SAVE THE DATE',
+                  style: AppText.label(12, color: AppColors.gold, spacing: 4),
+                ),
+                Text(
+                  WeddingData.monogram,
+                  style: AppText.script(40, color: AppColors.foreground),
+                ),
+                Text(
+                  WeddingData.dateLabel,
+                  style: AppText.body(14),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
@@ -218,10 +287,16 @@ class _WaxSeal extends StatelessWidget {
         margin: EdgeInsets.all(size * 0.11),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF8A5E48).withValues(alpha: 0.6), width: 1.5),
+          border: Border.all(
+            color: const Color(0xFF8A5E48).withValues(alpha: 0.6),
+            width: 1.5,
+          ),
         ),
         alignment: Alignment.center,
-        child: Text(WeddingData.monogram, style: AppText.script(size * 0.25, color: const Color(0xFF6B4334))),
+        child: Text(
+          WeddingData.monogram,
+          style: AppText.script(size * 0.25, color: const Color(0xFF6B4334)),
+        ),
       ),
     );
   }
@@ -233,7 +308,10 @@ const _envelopeShade = AppColors.roseDark;
 class _EnvelopeBackPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final r = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(4));
+    final r = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(4),
+    );
     canvas.drawShadow(Path()..addRRect(r), Colors.black, 12, false);
     canvas.drawRRect(r, Paint()..color = _envelopeShade);
   }
@@ -247,21 +325,24 @@ class _EnvelopeFrontPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
     // Side flaps
-    final sides = Paint()..color = Color.lerp(_envelopeColor, _envelopeShade, 0.25)!;
+    final sides = Paint()
+      ..color = Color.lerp(_envelopeColor, _envelopeShade, 0.25)!;
     canvas.drawPath(
-        Path()
-          ..moveTo(0, 0)
-          ..lineTo(w * 0.52, h * 0.55)
-          ..lineTo(0, h)
-          ..close(),
-        sides);
+      Path()
+        ..moveTo(0, 0)
+        ..lineTo(w * 0.52, h * 0.55)
+        ..lineTo(0, h)
+        ..close(),
+      sides,
+    );
     canvas.drawPath(
-        Path()
-          ..moveTo(w, 0)
-          ..lineTo(w * 0.48, h * 0.55)
-          ..lineTo(w, h)
-          ..close(),
-        sides);
+      Path()
+        ..moveTo(w, 0)
+        ..lineTo(w * 0.48, h * 0.55)
+        ..lineTo(w, h)
+        ..close(),
+      sides,
+    );
     // Bottom pocket
     final bottom = Path()
       ..moveTo(0, h)
@@ -276,7 +357,12 @@ class _EnvelopeFrontPainter extends CustomPainter {
       ..strokeWidth = 1;
     canvas.drawPath(bottom, line);
     canvas.drawRRect(
-        RRect.fromRectAndRadius((Offset.zero & size).deflate(0.5), const Radius.circular(4)), line);
+      RRect.fromRectAndRadius(
+        (Offset.zero & size).deflate(0.5),
+        const Radius.circular(4),
+      ),
+      line,
+    );
   }
 
   @override
@@ -301,8 +387,14 @@ class _FlapPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: inside
-              ? [_envelopeShade, Color.lerp(_envelopeShade, Colors.black, 0.15)!]
-              : [Color.lerp(_envelopeColor, Colors.white, 0.08)!, _envelopeColor],
+              ? [
+                  _envelopeShade,
+                  Color.lerp(_envelopeShade, Colors.black, 0.15)!,
+                ]
+              : [
+                  Color.lerp(_envelopeColor, Colors.white, 0.08)!,
+                  _envelopeColor,
+                ],
         ).createShader(Offset.zero & size),
     );
     canvas.drawPath(

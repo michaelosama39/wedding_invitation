@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wedding_invitation/l10n/l10n.dart';
 import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -96,7 +97,9 @@ class _GallerySectionState extends State<GallerySection> {
       ),
       child: Column(
         children: [
-          const Reveal(child: SectionTitle(title: 'Gallery', ornament: false)),
+          Reveal(
+            child: SectionTitle(title: S.gallery(context), ornament: false),
+          ),
           if (!_loaded)
             const SizedBox(height: 420)
           else

@@ -14,6 +14,7 @@ import 'package:wedding_invitation/widgets/location_section.dart';
 import 'package:wedding_invitation/widgets/wishes_section.dart';
 
 import '../data/wedding_data.dart';
+import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../widgets/footer_section.dart';
 
@@ -191,7 +192,7 @@ class _InvitationPageState extends State<InvitationPage>
               backgroundColor: Colors.white.withValues(alpha: 0.9),
               foregroundColor: AppColors.foreground,
               elevation: 2,
-              tooltip: _playing ? 'Pause music' : 'Play music',
+              tooltip: (_playing ? S.pauseMusic : S.playMusic)(context),
               child: Icon(
                 _playing ? Icons.music_note : Icons.music_off_outlined,
               ),

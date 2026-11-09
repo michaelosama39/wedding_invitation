@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/wedding_data.dart';
+import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../data/common.dart';
 
@@ -23,20 +24,20 @@ class FooterSection extends StatelessWidget {
           const SizedBox(height: 16),
           FitDown(
             child: Text(
-              '${WeddingData.groomName} & ${WeddingData.brideName}',
+              WeddingData.couple(context),
               style: AppText.script(context.isNarrow ? 40 : 48),
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            WeddingData.dateLabel.toUpperCase(),
+            WeddingData.dateLabel(context).toUpperCase(),
             style: AppText.label(13),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            'With all my love',
+            S.withAllMyLove(context),
             style: AppText.body(
               17,
               color: AppColors.ink(0.7),

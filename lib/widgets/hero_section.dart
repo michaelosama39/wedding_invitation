@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wedding_invitation/data/wedding_data.dart';
+import 'package:wedding_invitation/l10n/l10n.dart';
 import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 
@@ -95,7 +96,7 @@ class _HeroSectionState extends State<HeroSection>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  WeddingData.heroIntro.toUpperCase(),
+                                  WeddingData.heroIntro(context).toUpperCase(),
                                   textAlign: TextAlign.center,
                                   style: AppText.label(
                                     narrow ? 12 : 14,
@@ -107,7 +108,7 @@ class _HeroSectionState extends State<HeroSection>
                                 const SizedBox(height: 18),
                                 FittedBox(
                                   child: Text(
-                                    WeddingData.groomName,
+                                    WeddingData.groomName(context),
                                     style: AppText.script(
                                       narrow ? 72 : 112,
                                       color: Colors.white,
@@ -123,7 +124,7 @@ class _HeroSectionState extends State<HeroSection>
                                 ),
                                 FittedBox(
                                   child: Text(
-                                    WeddingData.brideName,
+                                    WeddingData.brideName(context),
                                     style: AppText.script(
                                       narrow ? 72 : 112,
                                       color: Colors.white,
@@ -132,7 +133,7 @@ class _HeroSectionState extends State<HeroSection>
                                 ),
                                 const SizedBox(height: 18),
                                 Text(
-                                  WeddingData.heroByline,
+                                  WeddingData.heroByline(context),
                                   textAlign: TextAlign.center,
                                   style: AppText.body(
                                     narrow ? 18 : 22,
@@ -142,7 +143,7 @@ class _HeroSectionState extends State<HeroSection>
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  WeddingData.dateLabel.toUpperCase(),
+                                  WeddingData.dateLabel(context).toUpperCase(),
                                   textAlign: TextAlign.center,
                                   style: AppText.label(
                                     narrow ? 16 : 22,
@@ -166,7 +167,7 @@ class _HeroSectionState extends State<HeroSection>
                                     ),
                                   ),
                                   child: Text(
-                                    'LEAVE A MESSAGE',
+                                    S.leaveMessageButton(context),
                                     style: AppText.label(
                                       13,
                                       color: Colors.white,
@@ -222,7 +223,7 @@ class _ScrollHintState extends State<_ScrollHint>
       child: Column(
         children: [
           Text(
-            'SCROLL',
+            S.scroll(context),
             style: AppText.label(11, color: Colors.white70, spacing: 4),
           ),
           const Icon(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../data/wedding_data.dart';
+import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../data/common.dart';
 
@@ -89,13 +90,9 @@ class _RsvpSectionState extends State<RsvpSection> {
     } catch (e) {
       debugPrint('Failed to send wish: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Sorry, your message could not be sent. Please try again.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(S.sendFailed(context))));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -109,12 +106,12 @@ class _RsvpSectionState extends State<RsvpSection> {
       child: Reveal(
         child: Column(
           children: [
-            const SectionTitle(
-              eyebrow: 'Say something sweet',
-              title: 'Leave a Message',
+            SectionTitle(
+              eyebrow: S.saySomethingSweet(context),
+              title: S.leaveMessage(context),
             ),
             Text(
-              'Share your wishes and love for the couple',
+              S.shareWishes(context),
               textAlign: TextAlign.center,
               style: AppText.body(
                 18,
@@ -137,19 +134,21 @@ class _RsvpSectionState extends State<RsvpSection> {
     key: const ValueKey('thanks'),
     children: [
       Text(
-        _sentName.isEmpty ? 'Thank you' : 'Thank you, $_sentName',
+        _sentName.isEmpty
+            ? S.thankYou(context)
+            : S.thankYouName(context, _sentName),
         textAlign: TextAlign.center,
         style: AppText.script(context.isNarrow ? 36 : 44),
       ),
       const SizedBox(height: 8),
       Text(
-        'Your message means the world to us.',
+        S.messageMeansWorld(context),
         textAlign: TextAlign.center,
         style: AppText.body(19),
       ),
       const SizedBox(height: 24),
       PillButton(
-        label: 'Write another',
+        label: S.writeAnother(context),
         onPressed: () => setState(() => _sent = false),
       ),
     ],
@@ -164,9 +163,9 @@ class _RsvpSectionState extends State<RsvpSection> {
         TextFormField(
           controller: _name,
           style: AppText.body(17, height: 1.3),
-          decoration: const InputDecoration(labelText: 'Your name (optional)'),
+          decoration: InputDecoration(labelText: S.yourNameOptional(context)),
           validator: (v) => (v != null && v.trim().length > 60)
-              ? 'Please use 60 characters or fewer'
+              ? S.nameTooLong(context)
               : null,
         ),
         const SizedBox(height: 20),
@@ -175,14 +174,15 @@ class _RsvpSectionState extends State<RsvpSection> {
           maxLines: 4,
           maxLength: 300,
           style: AppText.body(17, height: 1.4),
-          decoration: const InputDecoration(labelText: 'Your message'),
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Please write a message' : null,
+          decoration: InputDecoration(labelText: S.yourMessage(context)),
+          validator: (v) => (v == null || v.trim().isEmpty)
+              ? S.pleaseWriteMessage(context)
+              : null,
         ),
         const SizedBox(height: 20),
         Center(
           child: PillButton(
-            label: _sending ? 'Sending…' : 'Send Message',
+            label: (_sending ? S.sending : S.sendMessage)(context),
             filled: true,
             onPressed: _sending ? null : _submit,
           ),

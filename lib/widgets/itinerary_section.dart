@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wedding_invitation/data/wedding_data.dart';
+import 'package:wedding_invitation/l10n/l10n.dart';
 import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 
@@ -11,7 +12,7 @@ class ItinerarySection extends StatelessWidget {
     return SectionShell(
       child: Column(
         children: [
-          const Reveal(child: SectionTitle(title: 'The Day', size: 60)),
+          Reveal(child: SectionTitle(title: S.theDay(context), size: 60)),
           for (var i = 0; i < WeddingData.schedule.length; i++)
             Reveal(
               delay: Duration(milliseconds: 60 * i),
@@ -43,7 +44,7 @@ class _ItineraryRow extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                item.time,
+                item.time(context),
                 textAlign: TextAlign.center,
                 style: AppText.label(
                   narrow ? 17 : 20,
@@ -54,7 +55,7 @@ class _ItineraryRow extends StatelessWidget {
           ],
         ),
         Text(
-          item.subtitle,
+          item.subtitle(context),
           textAlign: TextAlign.center,
           style: AppText.body(
             narrow ? 18 : 20,

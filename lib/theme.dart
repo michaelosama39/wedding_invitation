@@ -20,11 +20,32 @@ class AppColors {
 }
 
 class AppText {
-  /// Script headings (Pinyon Script).
-  static TextStyle script(double size, {Color color = AppColors.foreground}) =>
-      GoogleFonts.pinyonScript(fontSize: size, color: color, height: 1.15);
+  /// Set by the app whenever the language changes (see main.dart).
+  ///
+  /// The Latin fonts have no Arabic glyphs, so in Arabic an Arabic font is
+  /// added as a fallback: Latin text (monogram, digits) keeps its typeface and
+  /// Arabic text uses the fallback. Letter-spacing and italics are dropped in
+  /// Arabic because they break the joined letters.
+  static bool arabic = false;
 
-  /// Body copy (EB Garamond).
+  static List<String>? _fallback(TextStyle Function() font) {
+    if (!arabic) return null;
+    final family = font().fontFamily;
+    return family == null ? null : [family];
+  }
+
+  static FontStyle? _style(FontStyle? style) => arabic ? null : style;
+  static double _spacing(double spacing) => arabic ? 0 : spacing;
+
+  /// Script headings (Pinyon Script / Aref Ruqaa).
+  static TextStyle script(double size, {Color color = AppColors.foreground}) =>
+      GoogleFonts.pinyonScript(
+        fontSize: size,
+        color: color,
+        height: arabic ? 1.5 : 1.15,
+      ).copyWith(fontFamilyFallback: _fallback(GoogleFonts.arefRuqaa));
+
+  /// Body copy (EB Garamond / Amiri).
   static TextStyle body(
     double size, {
     Color color = AppColors.foreground,
@@ -35,11 +56,11 @@ class AppText {
     fontSize: size,
     color: color,
     height: height,
-    fontStyle: style,
+    fontStyle: _style(style),
     fontWeight: weight,
-  );
+  ).copyWith(fontFamilyFallback: _fallback(GoogleFonts.amiri));
 
-  /// Small tracked uppercase labels (EB Garamond).
+  /// Small tracked uppercase labels (EB Garamond / Amiri).
   static TextStyle label(
     double size, {
     Color color = AppColors.mauve,
@@ -48,12 +69,12 @@ class AppText {
   }) => GoogleFonts.ebGaramond(
     fontSize: size,
     color: color,
-    letterSpacing: spacing,
+    letterSpacing: _spacing(spacing),
     fontWeight: weight,
     height: 1.6,
-  );
+  ).copyWith(fontFamilyFallback: _fallback(GoogleFonts.amiri));
 
-  /// Display numerals / venue names (Cormorant Garamond).
+  /// Display numerals / venue names (Cormorant Garamond / Amiri).
   static TextStyle display(
     double size, {
     Color color = AppColors.foreground,
@@ -63,7 +84,7 @@ class AppText {
     color: color,
     fontWeight: weight,
     height: 1.1,
-  );
+  ).copyWith(fontFamilyFallback: _fallback(GoogleFonts.amiri));
 }
 
 ThemeData buildTheme() {
@@ -83,6 +104,7 @@ ThemeData buildTheme() {
     textTheme: GoogleFonts.ebGaramondTextTheme(base.textTheme).apply(
       bodyColor: AppColors.foreground,
       displayColor: AppColors.foreground,
+      fontFamilyFallback: AppText._fallback(GoogleFonts.amiri),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

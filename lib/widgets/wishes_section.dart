@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wedding_invitation/widgets/rsvp_section.dart';
 import '../data/wedding_data.dart';
+import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../data/common.dart';
 
@@ -13,8 +14,11 @@ class WishesSection extends StatelessWidget {
     return SectionShell(
       child: Column(
         children: [
-          const Reveal(
-            child: SectionTitle(eyebrow: 'From our guests', title: 'Wishes'),
+          Reveal(
+            child: SectionTitle(
+              eyebrow: S.fromOurGuests(context),
+              title: S.wishes(context),
+            ),
           ),
           ValueListenableBuilder<List<Wish>>(
             valueListenable: wishes,
@@ -29,7 +33,7 @@ class WishesSection extends StatelessWidget {
                           child: Column(
                             children: [
                               Text(
-                                '“${w.message}”',
+                                S.quote(context, w.message),
                                 textAlign: TextAlign.center,
                                 style: AppText.body(
                                   context.isNarrow ? 17 : 19,
@@ -39,7 +43,7 @@ class WishesSection extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '— ${w.name.isEmpty ? 'A GUEST' : w.name.toUpperCase()}',
+                                '— ${w.name.isEmpty ? S.aGuest(context) : w.name.toUpperCase()}',
                                 style: AppText.label(12),
                               ),
                             ],
@@ -64,13 +68,13 @@ class WishesSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'No wishes yet',
+          S.noWishesYet(context),
           textAlign: TextAlign.center,
           style: AppText.script(context.isNarrow ? 30 : 36),
         ),
         const SizedBox(height: 6),
         Text(
-          'Be the first to leave a message for the couple.',
+          S.beFirst(context),
           textAlign: TextAlign.center,
           style: AppText.body(
             context.isNarrow ? 17 : 19,

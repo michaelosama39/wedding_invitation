@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../data/common.dart';
 import '../data/wedding_data.dart';
+import '../l10n/l10n.dart';
 import '../theme.dart';
 
 /// Sealed rose envelope. Tapping the wax seal breaks it, lifts the
@@ -109,7 +110,7 @@ class _EnvelopeScreenState extends State<EnvelopeScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'You are invited',
+                                S.youAreInvited(context),
                                 style: AppText.label(
                                   14,
                                   color: AppColors.mauve,
@@ -121,7 +122,7 @@ class _EnvelopeScreenState extends State<EnvelopeScreen>
                                 width: math.max(w, 280),
                                 child: FitDown(
                                   child: Text(
-                                    '${WeddingData.groomName} & ${WeddingData.brideName}',
+                                    WeddingData.couple(context),
                                     style: AppText.script(
                                       c.maxWidth < 600 ? 44 : 52,
                                     ),
@@ -192,7 +193,7 @@ class _EnvelopeScreenState extends State<EnvelopeScreen>
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      'Tap the seal to open',
+                                      S.tapSeal(context),
                                       style: AppText.body(
                                         18,
                                         style: FontStyle.italic,
@@ -256,7 +257,7 @@ class _InnerCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'SAVE THE DATE',
+                  S.saveTheDate(context),
                   style: AppText.label(12, color: AppColors.gold, spacing: 4),
                 ),
                 Text(
@@ -264,7 +265,7 @@ class _InnerCard extends StatelessWidget {
                   style: AppText.script(40, color: AppColors.foreground),
                 ),
                 Text(
-                  WeddingData.dateLabel,
+                  WeddingData.dateLabel(context),
                   style: AppText.body(14),
                   textAlign: TextAlign.center,
                 ),

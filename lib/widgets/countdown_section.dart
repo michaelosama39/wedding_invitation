@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:wedding_invitation/data/wedding_data.dart';
+import 'package:wedding_invitation/l10n/l10n.dart';
 import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 
@@ -38,10 +39,10 @@ class _CountdownSectionState extends State<CountdownSection> {
   Widget build(BuildContext context) {
     final narrow = context.isNarrow;
     final units = [
-      (_left.inDays, 'DAYS'),
-      (_left.inHours % 24, 'HOURS'),
-      (_left.inMinutes % 60, 'MINS'),
-      (_left.inSeconds % 60, 'SECS'),
+      (_left.inDays, S.days(context)),
+      (_left.inHours % 24, S.hours(context)),
+      (_left.inMinutes % 60, S.mins(context)),
+      (_left.inSeconds % 60, S.secs(context)),
     ];
     final cells = <Widget>[];
     for (var i = 0; i < units.length; i++) {
@@ -84,7 +85,7 @@ class _CountdownSectionState extends State<CountdownSection> {
         child: Column(
           children: [
             Text(
-              'Counting the days',
+              S.countingDays(context),
               textAlign: TextAlign.center,
               style: AppText.script(
                 context.responsive(40.0, 60.0, tablet: 52.0),

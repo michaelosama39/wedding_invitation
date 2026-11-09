@@ -1,29 +1,42 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 /// All invitation content lives here — edit this file to personalise the site.
+/// Text shown to guests is given in English and Arabic: Tr('English', 'عربي').
 class WeddingData {
-  static const brideName = 'Martina';
-  static const groomName = 'Michael';
+  static const brideName = Tr('Martina', 'مارتينا');
+  static const groomName = Tr('Michael', 'مايكل');
   static const monogram = 'M&M';
 
   static final weddingDate = DateTime(2027, 1, 28, 17, 0);
-  static const dateLabel = 'Thursday, 28 January 2027\n5:00 PM';
+  static const dateLabel = Tr(
+    'Thursday, 28 January 2027\n5:00 PM',
+    'الخميس، 28 يناير 2027\n5:00 مساءً',
+  );
 
-  static const heroIntro = 'Together with their families';
-  static const heroByline = 'invite you to celebrate their engagement';
+  static const heroIntro = Tr('Together with their families', 'مع عائلتيهما');
+  static const heroByline = Tr(
+    'invite you to celebrate their engagement',
+    'يتشرفان بدعوتكم لمشاركتهما فرحة الخطوبة',
+  );
+
+  /// "Michael & Martina" in the current language.
+  static String couple(BuildContext context) =>
+      '${groomName(context)} & ${brideName(context)}';
 
   // location
-  static const locationName = 'Villa Le Colline';
-  static const locationCity = 'El-Mahalla el-Kubra';
-  static const locationCountry = 'Egypt';
+  static const locationName = Tr('Villa Le Colline', 'فيلا لي كولين');
+  static const locationCity = Tr('El-Mahalla el-Kubra', 'المحلة الكبرى');
+  static const locationCountry = Tr('Egypt', 'مصر');
   static const mapsQuery =
       'Maryland tourist village, Tanta - Al Mahallah Al Kubra Rd, Egypt';
 
   // schedule
   static const schedule = <ScheduleItem>[
     ScheduleItem(
-      '05:00 PM',
-      'Thursday, 28 January 2027',
+      Tr('05:00 PM', '5:00 مساءً'),
+      Tr('Thursday, 28 January 2027', 'الخميس، 28 يناير 2027'),
       Icons.local_bar_outlined,
     ),
   ];
@@ -39,8 +52,8 @@ class WeddingAssets {
 }
 
 class ScheduleItem {
-  final String time;
-  final String subtitle;
+  final Tr time;
+  final Tr subtitle;
   final IconData icon;
   const ScheduleItem(this.time, this.subtitle, this.icon);
 }

@@ -10,14 +10,7 @@ class WeddingData {
   static const dateLabel = 'Thursday, 28 January 2027\n5:00 PM';
 
   static const heroIntro = 'Together with their families';
-  static const heroByline = 'invite you to celebrate their wedding';
-
-  static const welcomeTitle = 'Benvenuti';
-  static const story =
-      'We met on a late summer evening in Florence, sharing a table at a crowded '
-      'trattoria. Years of long walks, slow dinners and countless sunsets later, '
-      'we are returning to the hills of Tuscany to say "sì" — and we would love '
-      'nothing more than to have you there beside us.';
+  static const heroByline = 'invite you to celebrate their engagement';
 
   // location
   static const locationName = 'Villa Le Colline';

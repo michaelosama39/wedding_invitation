@@ -25,7 +25,7 @@ class InvitationPage extends StatefulWidget {
 }
 
 class _InvitationPageState extends State<InvitationPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final _scroll = ScrollController();
   final _rsvpKey = GlobalKey();
   final _wishes = WishesController();
@@ -48,6 +48,7 @@ class _InvitationPageState extends State<InvitationPage>
     // Created eagerly: a lazy ticker would first be built inside dispose(),
     // when looking up TickerMode on the deactivated element throws.
     _autoScroller = createTicker(_onAutoScrollTick);
+    WidgetsBinding.instance.addObserver(this);
     _startMusic();
     _autoScrollStart = Timer(_autoScrollDelay, () {
       if (!mounted || _autoScrollStopped) return;
@@ -90,23 +91,42 @@ class _InvitationPageState extends State<InvitationPage>
 
   /// True once the track has been loaded (prepared) by the native player.
   bool _sourceReady = false;
+  Future<void>? _loading;
 
-  /// Loads the track if needed, then starts it. Android's MediaPlayer throws
-  /// MEDIA_ERROR -38 ("invalid state") if it is told to loop/play before the
-  /// source is prepared, so each step waits for the previous one.
-  Future<void> _playMusic() async {
-    try {
-      if (!_sourceReady) {
+  /// Whether the app is in the foreground. Music never plays in background.
+  bool _foreground = true;
+
+  /// Loads the track once. Android's MediaPlayer throws MEDIA_ERROR -38
+  /// ("invalid state") if it is told to loop/play before the source is
+  /// prepared, so each step waits for the previous one.
+  Future<void> _ensureLoaded() {
+    if (_sourceReady) return Future.value();
+    return _loading ??= () async {
+      try {
         // AssetSource adds the "assets/" prefix itself (audioplayers' default
         // AudioCache prefix), so pass the path without it.
-        final source = WeddingAssets.music.replaceFirst(RegExp(r'^assets/'), '');
+        final source = WeddingAssets.music.replaceFirst(
+          RegExp(r'^assets/'),
+          '',
+        );
         await _player.setSource(AssetSource(source)); // completes once prepared
         await _player.setReleaseMode(ReleaseMode.loop);
         await _player.setVolume(0.6);
         _sourceReady = true;
+      } finally {
+        _loading = null;
       }
+    }();
+  }
+
+  /// Starts the music, unless the guest paused it or the app went to the
+  /// background while the track was still loading.
+  Future<void> _playMusic() async {
+    if (mounted) setState(() => _playing = true);
+    try {
+      await _ensureLoaded();
+      if (!mounted || !_playing || !_foreground) return;
       await _player.resume();
-      if (mounted) setState(() => _playing = true);
     } catch (e) {
       // Autoplay blocked (web) or the player failed: reset so the next tap on
       // the music button starts from a clean player.
@@ -117,22 +137,36 @@ class _InvitationPageState extends State<InvitationPage>
     }
   }
 
-  Future<void> _toggleMusic() async {
-    if (_playing) {
-      await _player.pause();
-      if (mounted) setState(() => _playing = false);
+  Future<void> _pauseMusic() async {
+    if (mounted) setState(() => _playing = false);
+    if (_sourceReady) await _player.pause().catchError((_) {});
+  }
+
+  Future<void> _toggleMusic() => _playing ? _pauseMusic() : _playMusic();
+
+  /// Pause when the app is hidden (home button, lock screen, app switch) and
+  /// resume on return if the guest had the music on.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final wasForeground = _foreground;
+    _foreground = state == AppLifecycleState.resumed;
+    if (!_sourceReady || wasForeground == _foreground) return;
+    if (_foreground) {
+      if (_playing) _player.resume().catchError((_) {});
     } else {
-      await _playMusic();
+      _player.pause().catchError((_) {});
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _autoScrollStart?.cancel();
     _autoScroller.dispose();
     _scroll.dispose();
     _wishes.dispose();
-    _player.dispose();
+    // Stop before releasing so the native player can't keep sounding.
+    _player.stop().catchError((_) {}).whenComplete(_player.dispose);
     super.dispose();
   }
 

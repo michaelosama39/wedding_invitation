@@ -1,12 +1,54 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../data/wedding_data.dart';
 import '../theme.dart';
 import '../data/common.dart';
 
+/// Live list of guest wishes, backed by the Firestore `wishes` collection.
+///
+/// Starts from [WeddingData.initialWishes] (currently empty, so the Wishes
+/// section shows its empty state) until the first snapshot arrives.
 class WishesController extends ValueNotifier<List<Wish>> {
-  WishesController() : super(List.of(WeddingData.initialWishes));
+  WishesController() : super(List.of(WeddingData.initialWishes)) {
+    _sub = _collection
+        .orderBy('createdAt', descending: true)
+        .limit(200)
+        .snapshots()
+        .listen(
+          _onSnapshot,
+          onError: (Object e) => debugPrint('Wishes stream error: $e'),
+        );
+  }
 
-  void add(Wish wish) => value = [wish, ...value];
+  static final _collection = FirebaseFirestore.instance.collection('wishes');
+  late final StreamSubscription<QuerySnapshot<Map<String, dynamic>>> _sub;
+
+  void _onSnapshot(QuerySnapshot<Map<String, dynamic>> snap) {
+    final wishes = [
+      for (final doc in snap.docs)
+        Wish(
+          doc.data()['name'] as String? ?? '',
+          doc.data()['message'] as String? ?? '',
+        ),
+    ];
+    value = wishes.isEmpty ? List.of(WeddingData.initialWishes) : wishes;
+  }
+
+  /// Saves a wish. The live stream shows it right away (local write); the
+  /// returned future completes once the server has accepted it.
+  Future<void> add(Wish wish) => _collection.add({
+    'name': wish.name,
+    'message': wish.message,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
 }
 
 class RsvpSection extends StatefulWidget {
@@ -22,6 +64,7 @@ class _RsvpSectionState extends State<RsvpSection> {
   final _name = TextEditingController();
   final _message = TextEditingController();
   bool _sent = false;
+  bool _sending = false;
   String _sentName = '';
 
   @override
@@ -31,14 +74,31 @@ class _RsvpSectionState extends State<RsvpSection> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!_form.currentState!.validate()) return;
-    widget.wishes.add(Wish(_name.text.trim(), _message.text.trim()));
-    setState(() {
-      _sentName = _name.text.trim();
-      _sent = true;
-    });
-    _message.clear();
+  Future<void> _submit() async {
+    if (_sending || !_form.currentState!.validate()) return;
+    final name = _name.text.trim();
+    setState(() => _sending = true);
+    try {
+      await widget.wishes.add(Wish(name, _message.text.trim()));
+      if (!mounted) return;
+      setState(() {
+        _sentName = name;
+        _sent = true;
+      });
+      _message.clear();
+    } catch (e) {
+      debugPrint('Failed to send wish: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Sorry, your message could not be sent. Please try again.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
@@ -77,7 +137,7 @@ class _RsvpSectionState extends State<RsvpSection> {
     key: const ValueKey('thanks'),
     children: [
       Text(
-        'Thank you, $_sentName',
+        _sentName.isEmpty ? 'Thank you' : 'Thank you, $_sentName',
         textAlign: TextAlign.center,
         style: AppText.script(context.isNarrow ? 36 : 44),
       ),
@@ -104,9 +164,10 @@ class _RsvpSectionState extends State<RsvpSection> {
         TextFormField(
           controller: _name,
           style: AppText.body(17, height: 1.3),
-          decoration: const InputDecoration(labelText: 'Your name'),
-          validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Please enter your name' : null,
+          decoration: const InputDecoration(labelText: 'Your name (optional)'),
+          validator: (v) => (v != null && v.trim().length > 60)
+              ? 'Please use 60 characters or fewer'
+              : null,
         ),
         const SizedBox(height: 20),
         TextFormField(
@@ -121,9 +182,9 @@ class _RsvpSectionState extends State<RsvpSection> {
         const SizedBox(height: 20),
         Center(
           child: PillButton(
-            label: 'Send Message',
+            label: _sending ? 'Sending…' : 'Send Message',
             filled: true,
-            onPressed: _submit,
+            onPressed: _sending ? null : _submit,
           ),
         ),
       ],

@@ -35,13 +35,7 @@ class WeddingData {
     ),
   ];
 
-  static const initialWishes = <Wish>[
-    Wish(
-      'Elena',
-      'Wishing you a lifetime of sunsets as golden as Tuscany. Cin cin!',
-    ),
-    Wish('Luca', 'Can\'t wait to dance under the pergola with you both.'),
-  ];
+  static const initialWishes = <Wish>[];
 }
 
 /// Optional media files — see assets/README.md.

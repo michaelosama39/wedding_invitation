@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "905723818489",
+    "project_id": "wedding-invitation-mo39",
+    "storage_bucket": "wedding-invitation-mo39.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:905723818489:android:03eb489d5d26f891938d28",
+        "android_client_info": {
+          "package_name": "com.example.wedding_invitation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD72Gt0-KUTdnLmKtYrccNGgqmRe4p-8NI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

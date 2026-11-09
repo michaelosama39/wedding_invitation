@@ -1,10 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'firebase_options.dart';
 import 'screens/envelope_screen.dart';
 import 'screens/invitation_page.dart';
 import 'theme.dart';
 
-void main() => runApp(const WeddingApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const WeddingApp());
+}
 
 class WeddingApp extends StatelessWidget {
   const WeddingApp({super.key});

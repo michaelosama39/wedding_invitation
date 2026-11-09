@@ -1,0 +1,29 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "wedding-invitation-mo39",
+          "appId": "1:905723818489:android:03eb489d5d26f891938d28",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "wedding-invitation-mo39",
+          "configurations": {
+            "android": "1:905723818489:android:03eb489d5d26f891938d28",
+            "ios": "1:905723818489:ios:c8afe0494c2e7b9c938d28",
+            "web": "1:905723818489:web:db474d954044bcbb938d28"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "europe-west1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

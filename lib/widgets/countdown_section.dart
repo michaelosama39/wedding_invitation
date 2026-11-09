@@ -36,7 +36,7 @@ class _CountdownSectionState extends State<CountdownSection> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 600;
+    final narrow = context.isNarrow;
     final units = [
       (_left.inDays, 'DAYS'),
       (_left.inHours % 24, 'HOURS'),
@@ -51,16 +51,22 @@ class _CountdownSectionState extends State<CountdownSection> {
         Expanded(
           child: Column(
             children: [
-              Text(
-                value.toString().padLeft(2, '0'),
-                style: AppText.display(narrow ? 40 : 64),
+              FitDown(
+                child: Text(
+                  value.toString().padLeft(2, '0'),
+                  style: AppText.display(
+                    context.responsive(40.0, 64.0, tablet: 56.0),
+                  ),
+                ),
               ),
               SizedBox(height: narrow ? 8 : 12),
-              Text(
-                label,
-                style: AppText.label(
-                  narrow ? 10 : 12,
-                  spacing: narrow ? 2.2 : 3.4,
+              FitDown(
+                child: Text(
+                  label,
+                  style: AppText.label(
+                    narrow ? 10 : 12,
+                    spacing: narrow ? 2.2 : 3.4,
+                  ),
                 ),
               ),
             ],
@@ -71,14 +77,20 @@ class _CountdownSectionState extends State<CountdownSection> {
 
     return SectionShell(
       padding: EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: narrow ? 80 : 112,
+        horizontal: narrow ? 12 : 20,
+        vertical: context.responsive(72.0, 112.0, tablet: 96.0),
       ),
       child: Reveal(
         child: Column(
           children: [
-            Text('Counting the days', style: AppText.script(narrow ? 40 : 60)),
-            const SizedBox(height: 28),
+            Text(
+              'Counting the days',
+              textAlign: TextAlign.center,
+              style: AppText.script(
+                context.responsive(40.0, 60.0, tablet: 52.0),
+              ),
+            ),
+            SizedBox(height: narrow ? 20 : 28),
             DoubleRuleBox(
               color: AppColors.gold.withValues(alpha: 0.55),
               padding: EdgeInsets.symmetric(
@@ -100,7 +112,7 @@ class _CountdownDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: EdgeInsets.symmetric(horizontal: context.isNarrow ? 2 : 6),
       child: Column(
         children: [
           Icon(

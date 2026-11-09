@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wedding_invitation/data/wedding_data.dart';
 import 'package:wedding_invitation/main.dart';
 
 void main() {
@@ -17,7 +18,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const WeddingApp());
-    await tester.tap(find.text('G&M').last);
+    await tester.tap(find.text(WeddingData.monogram).last);
     for (var i = 0; i < 50; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }

@@ -30,7 +30,7 @@ class WishesSection extends StatelessWidget {
                           '“${w.message}”',
                           textAlign: TextAlign.center,
                           style: AppText.body(
-                            19,
+                            context.isNarrow ? 17 : 19,
                             color: AppColors.ink(0.85),
                             style: FontStyle.italic,
                           ),

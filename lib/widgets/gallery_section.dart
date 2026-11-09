@@ -4,7 +4,6 @@ import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-
 class GallerySection extends StatefulWidget {
   const GallerySection({super.key});
 
@@ -19,7 +18,8 @@ class _GallerySectionState extends State<GallerySection> {
   bool _autoPlay = true;
   int _page = 0;
 
-  int get _count => _images.isEmpty ? 3 : _images.length; // 3 painted placeholders
+  int get _count =>
+      _images.isEmpty ? 3 : _images.length; // 3 painted placeholders
 
   @override
   void initState() {
@@ -31,12 +31,18 @@ class _GallerySectionState extends State<GallerySection> {
     List<String> found = const [];
     try {
       final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      found = manifest
-          .listAssets()
-          .where((p) => p.startsWith('assets/images/gallery'))
-          .where((p) => RegExp(r'\.(jpe?g|png|webp|gif)$', caseSensitive: false).hasMatch(p))
-          .toList()
-        ..sort(_naturalCompare);
+      found =
+          manifest
+              .listAssets()
+              .where((p) => p.startsWith('assets/images/gallery'))
+              .where(
+                (p) => RegExp(
+                  r'\.(jpe?g|png|webp|gif)$',
+                  caseSensitive: false,
+                ).hasMatch(p),
+              )
+              .toList()
+            ..sort(_naturalCompare);
     } catch (_) {}
     if (!mounted) return;
     setState(() {
@@ -47,14 +53,20 @@ class _GallerySectionState extends State<GallerySection> {
 
   /// Sorts gallery_2 before gallery_10.
   static int _naturalCompare(String a, String b) {
-    int n(String s) => int.tryParse(RegExp(r'(\d+)(?!.*\d)').firstMatch(s)?.group(1) ?? '') ?? 0;
+    int n(String s) =>
+        int.tryParse(RegExp(r'(\d+)(?!.*\d)').firstMatch(s)?.group(1) ?? '') ??
+        0;
     final c = n(a).compareTo(n(b));
     return c != 0 ? c : a.compareTo(b);
   }
 
   Widget _image(int i, BoxFit fit) {
-    final placeholder = CustomPaint(painter: TuscanLandscapePainter(variant: (i * 0.31) % 1));
-    return _images.isEmpty ? placeholder : AssetOr(_images[i], fit: fit, fallback: placeholder);
+    final placeholder = CustomPaint(
+      painter: TuscanLandscapePainter(variant: (i * 0.31) % 1),
+    );
+    return _images.isEmpty
+        ? placeholder
+        : AssetOr(_images[i], fit: fit, fallback: placeholder);
   }
 
   Future<void> _open(int i) async {
@@ -66,7 +78,7 @@ class _GallerySectionState extends State<GallerySection> {
         onTap: () => Navigator.of(ctx).pop(),
         child: Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(24),
+          insetPadding: EdgeInsets.all(context.isNarrow ? 8 : 24),
           child: InteractiveViewer(child: _image(i, BoxFit.contain)),
         ),
       ),
@@ -79,7 +91,9 @@ class _GallerySectionState extends State<GallerySection> {
     final multiple = _count > 1;
     return SectionShell(
       maxWidth: 960,
-      padding: const EdgeInsets.symmetric(vertical: 96),
+      padding: EdgeInsets.symmetric(
+        vertical: context.responsive(64.0, 96.0, tablet: 80.0),
+      ),
       child: Column(
         children: [
           const Reveal(child: SectionTitle(title: 'Gallery', ornament: false)),
@@ -87,82 +101,107 @@ class _GallerySectionState extends State<GallerySection> {
             const SizedBox(height: 420)
           else
             Reveal(
-              child: LayoutBuilder(builder: (context, c) {
-                final height = (c.maxWidth * 1.15).clamp(340.0, 560.0);
-                final fraction = ((height * 0.78) / c.maxWidth).clamp(0.4, 0.82);
-                final wide = c.maxWidth > 640;
-                return Column(
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CarouselSlider.builder(
-                          carouselController: _carousel,
-                          itemCount: _count,
-                          itemBuilder: (context, i, _) => MouseRegion(
-                            cursor: SystemMouseCursors.zoomIn,
-                            child: GestureDetector(
-                              onTap: () => _open(i),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: ColoredBox(
-                                  color: AppColors.parchment,
-                                  child: SizedBox.expand(child: _image(i, BoxFit.cover)),
-                                ),
-                              ),
-                            ),
-                          ),
-                          options: CarouselOptions(
-                            height: height,
-                            viewportFraction: fraction,
-                            enlargeCenterPage: true,
-                            enlargeFactor: 0.18,
-                            enableInfiniteScroll: multiple,
-                            autoPlay: multiple && _autoPlay,
-                            autoPlayInterval: const Duration(seconds: 4),
-                            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                            autoPlayCurve: Curves.easeInOutCubic,
-                            pauseAutoPlayOnTouch: true,
-                            onPageChanged: (i, _) => setState(() => _page = i),
-                          ),
-                        ),
-                        if (wide && multiple) ...[
-                          Positioned(
-                            left: 12,
-                            child: _ArrowButton(icon: Icons.chevron_left, onTap: _carousel.previousPage),
-                          ),
-                          Positioned(
-                            right: 12,
-                            child: _ArrowButton(icon: Icons.chevron_right, onTap: _carousel.nextPage),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (multiple) ...[
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  // Never taller than ~80% of the viewport (landscape phones).
+                  final maxH = (context.screenSize.height * 0.8).clamp(
+                    260.0,
+                    560.0,
+                  );
+                  final height = (c.maxWidth * 1.15).clamp(260.0, maxH);
+                  final fraction = ((height * 0.78) / c.maxWidth).clamp(
+                    0.4,
+                    0.82,
+                  );
+                  final wide = c.maxWidth > 640;
+                  return Column(
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
                         children: [
-                          for (var i = 0; i < _count; i++)
-                            GestureDetector(
-                              onTap: () => _carousel.animateToPage(i),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
-                                width: i == _page ? 22 : 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: i == _page ? AppColors.mauve : AppColors.ink(0.2),
-                                  borderRadius: BorderRadius.circular(8),
+                          CarouselSlider.builder(
+                            carouselController: _carousel,
+                            itemCount: _count,
+                            itemBuilder: (context, i, _) => MouseRegion(
+                              cursor: SystemMouseCursors.zoomIn,
+                              child: GestureDetector(
+                                onTap: () => _open(i),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: ColoredBox(
+                                    color: AppColors.parchment,
+                                    child: SizedBox.expand(
+                                      child: _image(i, BoxFit.cover),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
+                            options: CarouselOptions(
+                              height: height,
+                              viewportFraction: fraction,
+                              enlargeCenterPage: true,
+                              enlargeFactor: 0.18,
+                              enableInfiniteScroll: multiple,
+                              autoPlay: multiple && _autoPlay,
+                              autoPlayInterval: const Duration(seconds: 4),
+                              autoPlayAnimationDuration: const Duration(
+                                milliseconds: 800,
+                              ),
+                              autoPlayCurve: Curves.easeInOutCubic,
+                              pauseAutoPlayOnTouch: true,
+                              onPageChanged: (i, _) =>
+                                  setState(() => _page = i),
+                            ),
+                          ),
+                          if (wide && multiple) ...[
+                            Positioned(
+                              left: 12,
+                              child: _ArrowButton(
+                                icon: Icons.chevron_left,
+                                onTap: _carousel.previousPage,
+                              ),
+                            ),
+                            Positioned(
+                              right: 12,
+                              child: _ArrowButton(
+                                icon: Icons.chevron_right,
+                                onTap: _carousel.nextPage,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
+                      if (multiple) ...[
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < _count; i++)
+                              GestureDetector(
+                                onTap: () => _carousel.animateToPage(i),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  width: i == _page ? 22 : 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: i == _page
+                                        ? AppColors.mauve
+                                        : AppColors.ink(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
-                );
-              }),
+                  );
+                },
+              ),
             ),
         ],
       ),

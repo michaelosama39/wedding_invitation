@@ -2,32 +2,80 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
+/// Breakpoints shared by every section.
+class Breakpoints {
+  static const phone = 600.0;
+  static const tablet = 1024.0;
+}
+
+extension ResponsiveContext on BuildContext {
+  Size get screenSize => MediaQuery.sizeOf(this);
+  bool get isNarrow => screenSize.width < Breakpoints.phone;
+  bool get isTablet =>
+      screenSize.width >= Breakpoints.phone &&
+      screenSize.width < Breakpoints.tablet;
+
+  /// Short viewports, e.g. a phone held in landscape.
+  bool get isShort => screenSize.height < 500;
+
+  /// Pick a value per breakpoint: phone, desktop and (optionally) tablet.
+  T responsive<T>(T phone, T desktop, {T? tablet}) {
+    if (isNarrow) return phone;
+    if (isTablet) return tablet ?? desktop;
+    return desktop;
+  }
+}
+
+/// Scales [child] down (never up) so it always fits the available space.
+class FitDown extends StatelessWidget {
+  final Widget child;
+  const FitDown({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) =>
+      FittedBox(fit: BoxFit.scaleDown, child: child);
+}
+
 /// Centred column on the cream background, constrained to a readable width.
 class SectionShell extends StatelessWidget {
   final Widget child;
   final double maxWidth;
   final bool doubleRules;
   final Decoration? decoration;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
   const SectionShell({
     super.key,
     required this.child,
     this.maxWidth = 672,
     this.doubleRules = false,
     this.decoration,
-    this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 96),
+    this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
     Widget content = Container(
       width: double.infinity,
-      padding: padding,
-      decoration: decoration ?? const BoxDecoration(color: AppColors.background),
-      child: Center(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: maxWidth), child: child)),
+      padding:
+          padding ??
+          EdgeInsets.symmetric(
+            horizontal: context.responsive(20.0, 28.0),
+            vertical: context.responsive(64.0, 96.0, tablet: 80.0),
+          ),
+      decoration:
+          decoration ?? const BoxDecoration(color: AppColors.background),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: child,
+        ),
+      ),
     );
     if (doubleRules) {
-      content = DoubleRuleBox(color: AppColors.mauve.withValues(alpha: 0.25), child: content);
+      content = DoubleRuleBox(
+        color: AppColors.mauve.withValues(alpha: 0.25),
+        child: content,
+      );
     }
     return content;
   }
@@ -38,18 +86,29 @@ class DoubleRuleBox extends StatelessWidget {
   final Widget child;
   final Color color;
   final EdgeInsets padding;
-  const DoubleRuleBox({super.key, required this.child, required this.color, this.padding = EdgeInsets.zero});
+  const DoubleRuleBox({
+    super.key,
+    required this.child,
+    required this.color,
+    this.padding = EdgeInsets.zero,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Widget rule() => Column(children: [
-          Container(height: 1, color: color),
-          const SizedBox(height: 1),
-          Container(height: 1, color: color),
-        ]);
+    Widget rule() => Column(
+      children: [
+        Container(height: 1, color: color),
+        const SizedBox(height: 1),
+        Container(height: 1, color: color),
+      ],
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [rule(), Padding(padding: padding, child: child), rule()],
+      children: [
+        rule(),
+        Padding(padding: padding, child: child),
+        rule(),
+      ],
     );
   }
 }
@@ -71,19 +130,28 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 600;
+    final narrow = context.isNarrow;
     return Column(
       children: [
         if (eyebrow != null) ...[
-          Text(eyebrow!.toUpperCase(), style: AppText.label(12, color: color.withValues(alpha: 0.6))),
+          Text(
+            eyebrow!.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: AppText.label(
+              12,
+              color: color.withValues(alpha: 0.6),
+              spacing: narrow ? 2.5 : 3.5,
+            ),
+          ),
           const SizedBox(height: 14),
         ],
-        Text(title, textAlign: TextAlign.center, style: AppText.script(narrow ? size * 0.8 : size, color: color)),
-        if (ornament) ...[
-          const SizedBox(height: 14),
-          const GoldOrnament(),
-        ],
-        const SizedBox(height: 36),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: AppText.script(narrow ? size * 0.8 : size, color: color),
+        ),
+        if (ornament) ...[const SizedBox(height: 14), const GoldOrnament()],
+        SizedBox(height: narrow ? 28 : 36),
       ],
     );
   }
@@ -93,11 +161,17 @@ class SectionTitle extends StatelessWidget {
 class GoldOrnament extends StatelessWidget {
   final double width;
   final Color color;
-  const GoldOrnament({super.key, this.width = 120, this.color = AppColors.gold});
+  const GoldOrnament({
+    super.key,
+    this.width = 120,
+    this.color = AppColors.gold,
+  });
 
   @override
-  Widget build(BuildContext context) =>
-      CustomPaint(size: Size(width, width * 22 / 120), painter: _OrnamentPainter(color));
+  Widget build(BuildContext context) => CustomPaint(
+    size: Size(width, width * 22 / 120),
+    painter: _OrnamentPainter(color),
+  );
 }
 
 class _OrnamentPainter extends CustomPainter {
@@ -129,7 +203,11 @@ class _OrnamentPainter extends CustomPainter {
           ..quadraticBezierTo(x0 + d * 12, 2, x0 + d * 16, 3),
         line,
       );
-      canvas.drawLine(Offset(x0 + d * 24, 12), Offset(60 + d * 58, 12), line..color = color.withValues(alpha: 0.35));
+      canvas.drawLine(
+        Offset(x0 + d * 24, 12),
+        Offset(60 + d * 58, 12),
+        line..color = color.withValues(alpha: 0.35),
+      );
       line.color = color.withValues(alpha: 0.6);
     }
   }
@@ -143,7 +221,12 @@ class AssetOr extends StatelessWidget {
   final String path;
   final Widget fallback;
   final BoxFit fit;
-  const AssetOr(this.path, {super.key, required this.fallback, this.fit = BoxFit.contain});
+  const AssetOr(
+    this.path, {
+    super.key,
+    required this.fallback,
+    this.fit = BoxFit.contain,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -162,8 +245,10 @@ class Reveal extends StatefulWidget {
 }
 
 class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  );
   ScrollPosition? _position;
 
   @override
@@ -201,7 +286,10 @@ class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
     return FadeTransition(
       opacity: curve,
       child: SlideTransition(
-        position: Tween(begin: const Offset(0, 0.06), end: Offset.zero).animate(curve),
+        position: Tween(
+          begin: const Offset(0, 0.06),
+          end: Offset.zero,
+        ).animate(curve),
         child: widget.child,
       ),
     );
@@ -214,14 +302,24 @@ class PillButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool filled;
-  const PillButton({super.key, required this.label, this.onPressed, this.icon, this.filled = false});
+  const PillButton({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.filled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final fg = filled ? AppColors.background : AppColors.ink(0.8);
     return Material(
       color: filled ? AppColors.foreground : Colors.transparent,
-      shape: StadiumBorder(side: BorderSide(color: filled ? AppColors.foreground : AppColors.ink(0.2))),
+      shape: StadiumBorder(
+        side: BorderSide(
+          color: filled ? AppColors.foreground : AppColors.ink(0.2),
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onPressed,
@@ -231,8 +329,17 @@ class PillButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[Icon(icon, size: 16, color: fg), const SizedBox(width: 8)],
-              Text(label, style: AppText.body(15, color: fg, height: 1.2)),
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: fg),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppText.body(15, color: fg, height: 1.2),
+                ),
+              ),
             ],
           ),
         ),
@@ -259,7 +366,11 @@ class TuscanLandscapePainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.lerp(const Color(0xFFE9A7B6), const Color(0xFFD7A2C0), variant)!,
+            Color.lerp(
+              const Color(0xFFE9A7B6),
+              const Color(0xFFD7A2C0),
+              variant,
+            )!,
             const Color(0xFFF6CFCF),
             const Color(0xFFFCEAEA),
           ],
@@ -267,15 +378,20 @@ class TuscanLandscapePainter extends CustomPainter {
         ).createShader(rect),
     );
 
-    final sunC = Offset(w * (0.68 - variant * 0.3), h * (0.62 - 0.22 * sunRise));
+    final sunC = Offset(
+      w * (0.68 - variant * 0.3),
+      h * (0.62 - 0.22 * sunRise),
+    );
     canvas.drawCircle(
       sunC,
       h * 0.22,
       Paint()
-        ..shader = RadialGradient(colors: [
-          const Color(0xFFFFF1CF).withValues(alpha: 0.9),
-          const Color(0xFFFFE2A8).withValues(alpha: 0),
-        ]).createShader(Rect.fromCircle(center: sunC, radius: h * 0.22)),
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFF1CF).withValues(alpha: 0.9),
+            const Color(0xFFFFE2A8).withValues(alpha: 0),
+          ],
+        ).createShader(Rect.fromCircle(center: sunC, radius: h * 0.22)),
     );
     canvas.drawCircle(sunC, h * 0.06, Paint()..color = const Color(0xFFFFF4DC));
 
@@ -287,7 +403,12 @@ class TuscanLandscapePainter extends CustomPainter {
       for (var i = 0; i < steps; i++) {
         final x0 = w * i / steps, x1 = w * (i + 1) / steps;
         final up = ((i + phase) % 2 == 0) ? -1 : 1;
-        path.quadraticBezierTo((x0 + x1) / 2, h * (baseY + up * amp), x1, h * baseY);
+        path.quadraticBezierTo(
+          (x0 + x1) / 2,
+          h * (baseY + up * amp),
+          x1,
+          h * baseY,
+        );
       }
       path
         ..lineTo(w, h)
@@ -306,12 +427,22 @@ class TuscanLandscapePainter extends CustomPainter {
       final x = w * (0.1 + t * 0.55 + variant * 0.2);
       final baseY = h * (0.72 + 0.02 * ((i % 3) - 1));
       final th = h * (0.13 + 0.03 * (i % 2));
-      canvas.drawOval(Rect.fromCenter(center: Offset(x, baseY - th / 2), width: th * 0.22, height: th), cypress);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, baseY - th / 2),
+          width: th * 0.22,
+          height: th,
+        ),
+        cypress,
+      );
     }
 
     final vx = w * (0.78 - variant * 0.5), vy = h * 0.70;
     final vw = w * 0.09, vh = h * 0.06;
-    canvas.drawRect(Rect.fromLTWH(vx, vy - vh, vw, vh), Paint()..color = const Color(0xFFEBD7B3));
+    canvas.drawRect(
+      Rect.fromLTWH(vx, vy - vh, vw, vh),
+      Paint()..color = const Color(0xFFEBD7B3),
+    );
     canvas.drawPath(
       Path()
         ..moveTo(vx - vw * 0.08, vy - vh)
@@ -320,12 +451,15 @@ class TuscanLandscapePainter extends CustomPainter {
         ..close(),
       Paint()..color = AppColors.rose,
     );
-    canvas.drawRect(Rect.fromLTWH(vx + vw * 0.7, vy - vh * 2.1, vw * 0.22, vh * 1.1),
-        Paint()..color = const Color(0xFFDCC39A));
+    canvas.drawRect(
+      Rect.fromLTWH(vx + vw * 0.7, vy - vh * 2.1, vw * 0.22, vh * 1.1),
+      Paint()..color = const Color(0xFFDCC39A),
+    );
 
     hill(0.90, 0.04, 1, const Color(0xFF5E6639));
   }
 
   @override
-  bool shouldRepaint(covariant TuscanLandscapePainter old) => old.variant != variant || old.sunRise != sunRise;
+  bool shouldRepaint(covariant TuscanLandscapePainter old) =>
+      old.variant != variant || old.sunRise != sunRise;
 }

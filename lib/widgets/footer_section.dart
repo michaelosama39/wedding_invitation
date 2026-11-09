@@ -9,7 +9,7 @@ class FooterSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SectionShell(
-      padding: const EdgeInsets.fromLTRB(24, 64, 24, 80),
+      padding: EdgeInsets.fromLTRB(20, context.isNarrow ? 48 : 64, 20, 80),
       child: Column(
         children: [
           SizedBox(
@@ -21,10 +21,12 @@ class FooterSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            '${WeddingData.groomName} & ${WeddingData.brideName}',
-            style: AppText.script(48),
-            textAlign: TextAlign.center,
+          FitDown(
+            child: Text(
+              '${WeddingData.groomName} & ${WeddingData.brideName}',
+              style: AppText.script(context.isNarrow ? 40 : 48),
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 8),
           Text(

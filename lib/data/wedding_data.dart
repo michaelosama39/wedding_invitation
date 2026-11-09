@@ -28,11 +28,18 @@ class WeddingData {
 
   // schedule
   static const schedule = <ScheduleItem>[
-    ScheduleItem('05:00 PM', 'Thursday, 28 January 2027', Icons.local_bar_outlined),
+    ScheduleItem(
+      '05:00 PM',
+      'Thursday, 28 January 2027',
+      Icons.local_bar_outlined,
+    ),
   ];
 
   static const initialWishes = <Wish>[
-    Wish('Elena', 'Wishing you a lifetime of sunsets as golden as Tuscany. Cin cin!'),
+    Wish(
+      'Elena',
+      'Wishing you a lifetime of sunsets as golden as Tuscany. Cin cin!',
+    ),
     Wish('Luca', 'Can\'t wait to dance under the pergola with you both.'),
   ];
 }

@@ -37,7 +37,7 @@ class _InvitationPageState extends State<InvitationPage>
   /// animation has played. Any guest interaction stops it for good.
   static const _autoScrollDelay = Duration(milliseconds: 3200);
   static const _autoScrollSpeed = 45.0; // logical pixels per second
-  late final Ticker _autoScroller = createTicker(_onAutoScrollTick);
+  late final Ticker _autoScroller;
   Timer? _autoScrollStart;
   Duration _lastTick = Duration.zero;
   bool _autoScrollStopped = false;
@@ -45,6 +45,9 @@ class _InvitationPageState extends State<InvitationPage>
   @override
   void initState() {
     super.initState();
+    // Created eagerly: a lazy ticker would first be built inside dispose(),
+    // when looking up TickerMode on the deactivated element throws.
+    _autoScroller = createTicker(_onAutoScrollTick);
     _startMusic();
     _autoScrollStart = Timer(_autoScrollDelay, () {
       if (!mounted || _autoScrollStopped) return;
@@ -80,26 +83,47 @@ class _InvitationPageState extends State<InvitationPage>
   Future<void> _startMusic() async {
     final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
     if (!manifest.listAssets().contains(WeddingAssets.music)) return;
-    await _player.setReleaseMode(ReleaseMode.loop);
+    if (!mounted) return;
+    setState(() => _hasMusic = true);
+    await _playMusic();
+  }
+
+  /// True once the track has been loaded (prepared) by the native player.
+  bool _sourceReady = false;
+
+  /// Loads the track if needed, then starts it. Android's MediaPlayer throws
+  /// MEDIA_ERROR -38 ("invalid state") if it is told to loop/play before the
+  /// source is prepared, so each step waits for the previous one.
+  Future<void> _playMusic() async {
     try {
-      // AssetSource adds the "assets/" prefix itself (audioplayers' default
-      // AudioCache prefix), so pass the path without it.
-      final source = WeddingAssets.music.replaceFirst(RegExp(r'^assets/'), '');
-      await _player.play(AssetSource(source), volume: 0.6);
-      if (mounted) setState(() => _hasMusic = _playing = true);
-    } catch (_) {
-      // Autoplay blocked — show the button so the guest can start it.
-      if (mounted) setState(() => _hasMusic = true);
+      if (!_sourceReady) {
+        // AssetSource adds the "assets/" prefix itself (audioplayers' default
+        // AudioCache prefix), so pass the path without it.
+        final source = WeddingAssets.music.replaceFirst(RegExp(r'^assets/'), '');
+        await _player.setSource(AssetSource(source)); // completes once prepared
+        await _player.setReleaseMode(ReleaseMode.loop);
+        await _player.setVolume(0.6);
+        _sourceReady = true;
+      }
+      await _player.resume();
+      if (mounted) setState(() => _playing = true);
+    } catch (e) {
+      // Autoplay blocked (web) or the player failed: reset so the next tap on
+      // the music button starts from a clean player.
+      debugPrint('Music could not start: $e');
+      _sourceReady = false;
+      await _player.stop().catchError((_) {});
+      if (mounted) setState(() => _playing = false);
     }
   }
 
   Future<void> _toggleMusic() async {
     if (_playing) {
       await _player.pause();
+      if (mounted) setState(() => _playing = false);
     } else {
-      await _player.resume();
+      await _playMusic();
     }
-    setState(() => _playing = !_playing);
   }
 
   @override

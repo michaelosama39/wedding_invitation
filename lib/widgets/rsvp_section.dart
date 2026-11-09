@@ -49,7 +49,10 @@ class _RsvpSectionState extends State<RsvpSection> {
       child: Reveal(
         child: Column(
           children: [
-            const SectionTitle(eyebrow: 'Say something sweet', title: 'Leave a Message'),
+            const SectionTitle(
+              eyebrow: 'Say something sweet',
+              title: 'Leave a Message',
+            ),
             Text(
               'Share your wishes and love for the couple',
               textAlign: TextAlign.center,
@@ -73,7 +76,11 @@ class _RsvpSectionState extends State<RsvpSection> {
   Widget _thanks() => Column(
     key: const ValueKey('thanks'),
     children: [
-      Text('Thank you, $_sentName', textAlign: TextAlign.center, style: AppText.script(44)),
+      Text(
+        'Thank you, $_sentName',
+        textAlign: TextAlign.center,
+        style: AppText.script(context.isNarrow ? 36 : 44),
+      ),
       const SizedBox(height: 8),
       Text(
         'Your message means the world to us.',

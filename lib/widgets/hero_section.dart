@@ -39,7 +39,7 @@ class _HeroSectionState extends State<HeroSection>
     const shadow = [Shadow(color: Color(0x66000000), blurRadius: 14)];
 
     return SizedBox(
-      height: size.height.clamp(560.0, 1100.0),
+      height: size.height.clamp(480.0, 1100.0),
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -71,88 +71,116 @@ class _HeroSectionState extends State<HeroSection>
                 end: Offset.zero,
               ).animate(textIn),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(24, size.height * 0.12, 24, 24),
+                padding: EdgeInsets.fromLTRB(
+                  narrow ? 20 : 32,
+                  (size.height * 0.08).clamp(24.0, 96.0),
+                  narrow ? 20 : 32,
+                  16,
+                ),
                 child: Column(
                   children: [
-                    Text(
-                      WeddingData.heroIntro.toUpperCase(),
-                      textAlign: TextAlign.center,
-                      style: AppText.label(
-                        narrow ? 12 : 14,
-                        color: Colors.white,
-                        spacing: 4.5,
-                        weight: FontWeight.w600,
-                      ).copyWith(shadows: shadow),
-                    ),
-                    const SizedBox(height: 18),
-                    FittedBox(
-                      child: Text(
-                        WeddingData.groomName,
-                        style: AppText.script(
-                          narrow ? 72 : 112,
-                          color: Colors.white,
-                        ).copyWith(shadows: shadow),
-                      ),
-                    ),
-                    Text(
-                      '&',
-                      style: AppText.script(
-                        narrow ? 40 : 56,
-                        color: Colors.white,
-                      ).copyWith(shadows: shadow),
-                    ),
-                    FittedBox(
-                      child: Text(
-                        WeddingData.brideName,
-                        style: AppText.script(
-                          narrow ? 72 : 112,
-                          color: Colors.white,
-                        ).copyWith(shadows: shadow),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      WeddingData.heroByline,
-                      textAlign: TextAlign.center,
-                      style: AppText.body(
-                        narrow ? 18 : 22,
-                        color: Colors.white,
-                        style: FontStyle.italic,
-                      ).copyWith(shadows: shadow),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      WeddingData.dateLabel.toUpperCase(),
-                      textAlign: TextAlign.center,
-                      style: AppText.label(
-                        narrow ? 16 : 22,
-                        color: Colors.white,
-                        spacing: 3,
-                        weight: FontWeight.w700,
-                      ).copyWith(shadows: shadow),
-                    ),
-                    const SizedBox(height: 28),
-                    OutlinedButton(
-                      onPressed: widget.onRsvp,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white70),
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 14,
+                    // The headline block scales down to fit short or narrow
+                    // screens (e.g. phones in landscape) instead of overflowing.
+                    Expanded(
+                      child: Center(
+                        child: FitDown(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: (size.width - (narrow ? 40 : 64)).clamp(
+                                240.0,
+                                900.0,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  WeddingData.heroIntro.toUpperCase(),
+                                  textAlign: TextAlign.center,
+                                  style: AppText.label(
+                                    narrow ? 12 : 14,
+                                    color: Colors.white,
+                                    spacing: 4.5,
+                                    weight: FontWeight.w600,
+                                  ).copyWith(shadows: shadow),
+                                ),
+                                const SizedBox(height: 18),
+                                FittedBox(
+                                  child: Text(
+                                    WeddingData.groomName,
+                                    style: AppText.script(
+                                      narrow ? 72 : 112,
+                                      color: Colors.white,
+                                    ).copyWith(shadows: shadow),
+                                  ),
+                                ),
+                                Text(
+                                  '&',
+                                  style: AppText.script(
+                                    narrow ? 40 : 56,
+                                    color: Colors.white,
+                                  ).copyWith(shadows: shadow),
+                                ),
+                                FittedBox(
+                                  child: Text(
+                                    WeddingData.brideName,
+                                    style: AppText.script(
+                                      narrow ? 72 : 112,
+                                      color: Colors.white,
+                                    ).copyWith(shadows: shadow),
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  WeddingData.heroByline,
+                                  textAlign: TextAlign.center,
+                                  style: AppText.body(
+                                    narrow ? 18 : 22,
+                                    color: Colors.white,
+                                    style: FontStyle.italic,
+                                  ).copyWith(shadows: shadow),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  WeddingData.dateLabel.toUpperCase(),
+                                  textAlign: TextAlign.center,
+                                  style: AppText.label(
+                                    narrow ? 16 : 22,
+                                    color: Colors.white,
+                                    spacing: 3,
+                                    weight: FontWeight.w700,
+                                  ).copyWith(shadows: shadow),
+                                ),
+                                const SizedBox(height: 28),
+                                OutlinedButton(
+                                  onPressed: widget.onRsvp,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: const BorderSide(
+                                      color: Colors.white70,
+                                    ),
+                                    shape: const StadiumBorder(),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 28,
+                                      vertical: 14,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'LEAVE A MESSAGE',
+                                    style: AppText.label(
+                                      13,
+                                      color: Colors.white,
+                                      spacing: 4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        'LEAVE A MESSAGE',
-                        style: AppText.label(
-                          13,
-                          color: Colors.white,
-                          spacing: 4,
-                        ),
-                      ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 12),
                     const _ScrollHint(),
                   ],
                 ),

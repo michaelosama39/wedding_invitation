@@ -38,7 +38,10 @@ class _InvitationRootState extends State<InvitationRoot> {
       switchInCurve: Curves.easeOut,
       child: _opened
           ? const InvitationPage(key: ValueKey('page'))
-          : EnvelopeScreen(key: const ValueKey('envelope'), onOpened: () => setState(() => _opened = true)),
+          : EnvelopeScreen(
+              key: const ValueKey('envelope'),
+              onOpened: () => setState(() => _opened = true),
+            ),
     );
   }
 }

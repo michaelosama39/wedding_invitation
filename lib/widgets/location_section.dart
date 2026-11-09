@@ -4,7 +4,6 @@ import 'package:wedding_invitation/data/wedding_data.dart';
 import 'package:wedding_invitation/theme.dart';
 import 'package:wedding_invitation/data/common.dart';
 
-
 class LocationSection extends StatelessWidget {
   const LocationSection({super.key});
 
@@ -18,18 +17,24 @@ class LocationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 600;
+    final narrow = context.isNarrow;
     return SectionShell(
       doubleRules: true,
       child: Reveal(
         child: Column(
           children: [
-            Text('Location', style: AppText.script(narrow ? 56 : 72)),
-            const SizedBox(height: 16),
+            Text(
+              'Location',
+              textAlign: TextAlign.center,
+              style: AppText.script(
+                context.responsive(48.0, 72.0, tablet: 64.0),
+              ),
+            ),
+            SizedBox(height: narrow ? 12 : 16),
             Text(
               WeddingData.locationName,
               textAlign: TextAlign.center,
-              style: AppText.display(32, weight: FontWeight.w500),
+              style: AppText.display(narrow ? 26 : 32, weight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Text(
@@ -65,9 +70,9 @@ class _MapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      height: narrow ? 256 : 320,
+      height: context.responsive(220.0, 360.0, tablet: 300.0),
+      width: double.infinity,
       decoration: BoxDecoration(border: Border.all(color: AppColors.ink(0.1))),
       child: _GoogleMapEmbed(query: WeddingData.mapsQuery, onTap: onTap),
     );

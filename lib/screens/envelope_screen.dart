@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../data/common.dart';
 import '../data/wedding_data.dart';
 import '../theme.dart';
 
@@ -97,96 +98,113 @@ class _EnvelopeScreenState extends State<EnvelopeScreen>
                 final flapBehind = flapAngle > math.pi / 2;
                 return Opacity(
                   opacity: 1 - _fade.value,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'You are invited',
-                          style: AppText.label(
-                            14,
-                            color: AppColors.mauve,
-                            spacing: 6,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${WeddingData.groomName} & ${WeddingData.brideName}',
-                          style: AppText.script(52),
-                        ),
-                        SizedBox(height: 40 + h * 0.55),
-                        SizedBox(
-                          width: w,
-                          height: h,
-                          child: Stack(
-                            clipBehavior: Clip.none,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Center(
+                        // Scales the whole composition down on very small or
+                        // landscape screens instead of overflowing.
+                        child: FitDown(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Back of envelope
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: _EnvelopeBackPainter(),
+                              Text(
+                                'You are invited',
+                                style: AppText.label(
+                                  14,
+                                  color: AppColors.mauve,
+                                  spacing: 6,
                                 ),
                               ),
-                              if (flapBehind) _buildFlap(w, h, flapAngle),
-                              // Card sliding out
-                              Positioned(
-                                left: w * 0.06,
-                                right: w * 0.06,
-                                top: h * 0.08 - _card.value * h * 0.62,
-                                height: h * 0.86,
-                                child: _InnerCard(),
-                              ),
-                              // Front pocket
-                              Positioned.fill(
-                                child: CustomPaint(
-                                  painter: _EnvelopeFrontPainter(),
-                                ),
-                              ),
-                              if (!flapBehind) _buildFlap(w, h, flapAngle),
-                              // Wax seal
-                              Positioned(
-                                left: w / 2 - seal / 2,
-                                top: h * 0.5 - seal / 2,
-                                child: Opacity(
-                                  opacity: 1 - _seal.value,
-                                  child: Transform.scale(
-                                    scale:
-                                        (1 + _pulse.value * 0.05) *
-                                        (1 + _seal.value * 0.4),
-                                    child: GestureDetector(
-                                      onTap: _tap,
-                                      child: MouseRegion(
-                                        cursor: SystemMouseCursors.click,
-                                        child: _WaxSeal(size: seal),
-                                      ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: math.max(w, 280),
+                                child: FitDown(
+                                  child: Text(
+                                    '${WeddingData.groomName} & ${WeddingData.brideName}',
+                                    style: AppText.script(
+                                      c.maxWidth < 600 ? 44 : 52,
                                     ),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 36),
-                        Opacity(
-                          opacity: (1 - _seal.value * 3).clamp(0, 1),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.touch_app_outlined,
-                                color: AppColors.roseDark,
+                              SizedBox(height: 40 + h * 0.55),
+                              SizedBox(
+                                width: w,
+                                height: h,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    // Back of envelope
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                        painter: _EnvelopeBackPainter(),
+                                      ),
+                                    ),
+                                    if (flapBehind) _buildFlap(w, h, flapAngle),
+                                    // Card sliding out
+                                    Positioned(
+                                      left: w * 0.06,
+                                      right: w * 0.06,
+                                      top: h * 0.08 - _card.value * h * 0.62,
+                                      height: h * 0.86,
+                                      child: _InnerCard(),
+                                    ),
+                                    // Front pocket
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                        painter: _EnvelopeFrontPainter(),
+                                      ),
+                                    ),
+                                    if (!flapBehind)
+                                      _buildFlap(w, h, flapAngle),
+                                    // Wax seal
+                                    Positioned(
+                                      left: w / 2 - seal / 2,
+                                      top: h * 0.5 - seal / 2,
+                                      child: Opacity(
+                                        opacity: 1 - _seal.value,
+                                        child: Transform.scale(
+                                          scale:
+                                              (1 + _pulse.value * 0.05) *
+                                              (1 + _seal.value * 0.4),
+                                          child: GestureDetector(
+                                            onTap: _tap,
+                                            child: MouseRegion(
+                                              cursor: SystemMouseCursors.click,
+                                              child: _WaxSeal(size: seal),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Tap the seal to open',
-                                style: AppText.body(
-                                  18,
-                                  style: FontStyle.italic,
+                              const SizedBox(height: 36),
+                              Opacity(
+                                opacity: (1 - _seal.value * 3).clamp(0, 1),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.touch_app_outlined,
+                                      color: AppColors.roseDark,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Tap the seal to open',
+                                      style: AppText.body(
+                                        18,
+                                        style: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 );

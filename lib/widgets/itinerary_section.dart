@@ -33,21 +33,31 @@ class _ItineraryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = context.isNarrow;
     return Column(
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(item.icon, size: 28, color: AppColors.mauve),
+            Icon(item.icon, size: narrow ? 24 : 28, color: AppColors.mauve),
             const SizedBox(width: 8),
-            Text(item.time, style: AppText.label(20, spacing: 3)),
+            Flexible(
+              child: Text(
+                item.time,
+                textAlign: TextAlign.center,
+                style: AppText.label(
+                  narrow ? 17 : 20,
+                  spacing: narrow ? 2.2 : 3,
+                ),
+              ),
+            ),
           ],
         ),
         Text(
           item.subtitle,
           textAlign: TextAlign.center,
           style: AppText.body(
-            20,
+            narrow ? 18 : 20,
             color: AppColors.ink(0.75),
             style: FontStyle.italic,
           ),
